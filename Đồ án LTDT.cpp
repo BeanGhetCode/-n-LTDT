@@ -143,7 +143,7 @@
         }
         return degrees;
     }
-    void calculateInAndOutDegrees(const vector<Edge>& edges, int numVertices,vector<int>& inDegrees, std::vector<int>& outDegrees) {
+    void calculateInAndOutDegrees(const vector<Edge>& edges, int numVertices,vector<int>& inDegrees, vector<int>& outDegrees) {
 
         inDegrees.resize(numVertices + 1, 0); 
         outDegrees.resize(numVertices + 1, 0);
@@ -163,11 +163,54 @@
         return check;
     }
 
+    int countHangingVerticesUndirected(const vector <int> degree, int numVertices) {
+        int check = 0;
+        for (int i = 1; i <= numVertices; ++i) {
+            if (degree[i] == 1) {
+                check++;
+            }
+        }
+        return check;
+    }
+    int countIsolatedVerticesUndirected(const vector <int> degree, int numVertices) {
+        int check = 0;
+        for (int i = 1; i <= numVertices; ++i) {
+            if (degree[i] == 0) {
+                check++;
+            }
+        }
+        return check;
+    }
+    int countHangingVerticesDirected(const vector<int> inDegrees, vector <int> outDegrees, int numVertices) {
+        int check = 0;
+        for (int i = 1; i <= numVertices; ++i) {
+            if ((outDegrees[i] + inDegrees[i]) == 1) {
+                check++;
+            }
+        }
+        return check;
+     
+    }
+    int countIsolatedVerticesDirected(const vector<int> inDegrees, vector <int> outDegrees, int numVertices) {
+        int check = 0;
+        for (int i = 1; i <= numVertices; ++i) {
+            if ((outDegrees[i] + inDegrees[i]) == 0) {
+                check++;
+            }
+        }
+        return check;
+    }
+
+
+
     int main() {
         int numVertices = 0;
         vector<Edge> edges = readGraphFromFile("graph.txt", numVertices);
+
+        //in ma trận
         printAdjacencyMatrix(edges, numVertices);
         
+        //kiểm tra vô hướng, có hướng
         if (isUndirectedGraph(edges)) {
             
             cout << "This is an undirected graph." << endl;
@@ -177,14 +220,39 @@
         }
 
         int countedges = countEdges(edges, isUndirectedGraph(edges));
+
+        //tổng số đỉnh
         cout << "Sum of vertices of graph: " << numVertices << endl;
+
+        //tông số cạnh
         cout << "Sum of edges of graph: " << countedges << endl;
-       
+
+       //cặp đỉnh xuất hiện canh bội
         int duplicateEdgeCount = countDuplicateEdges(edges);
         cout << "Number of pairs of vertices with multiple edges: " << duplicateEdgeCount << endl;
         
-        vector<int> degrees = calculateDegreesUndirected(edges, numVertices);
 
+        //cạnh khuyên
+        int edgePiercings = countEdgePiercings(edges);
+        cout << "Sum of edge piercings: " << edgePiercings << endl;
+
+        // đỉnh treo, đỉnh cô lập 
+        vector<int> degrees = calculateDegreesUndirected(edges, numVertices);
+        if (isUndirectedGraph(edges)) {
+            int countHanging = countHangingVerticesUndirected(degrees, numVertices);
+            cout << "Sum of hanging vertices of graph: " << countHanging << endl;
+            int coutIsolated = countIsolatedVerticesUndirected(degrees, numVertices);
+            cout << "Sum of isolated vertices of graph: " << coutIsolated << endl;
+        }
+        else {
+            vector<int> inDegrees, outDegrees;
+            calculateInAndOutDegrees(edges, numVertices, inDegrees, outDegrees);
+            int countHanging = countHangingVerticesDirected(inDegrees, outDegrees, numVertices);
+            cout << "Sum of hanging vertices of graph: " << countHanging << endl;
+            int coutIsolated = countIsolatedVerticesDirected(inDegrees,  outDegrees, numVertices);
+            cout << "Sum of isolated vertices of graph: " << coutIsolated << endl;
+        }
+        //bậc cuả đỉnh
         if (isUndirectedGraph(edges)) {
             cout << "Degrees of vertices:" << endl;
             for (int i = 1; i <= numVertices; ++i) {
@@ -198,8 +266,6 @@
                 cout << "Vertex " << i << ": In-Degree = " << inDegrees[i] << ", Out-Degree = " << outDegrees[i] << std::endl;
             }
         }
-
-        int edgePiercings = countEdgePiercings(edges);
-        cout << "Sum of edge piercings: " << edgePiercings << endl;
+        
         return 0;
     }
