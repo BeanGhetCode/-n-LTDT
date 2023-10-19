@@ -6,6 +6,7 @@
 #include <sstream> 
 #include <algorithm>
 #include <set>
+#include <queue> 
     using namespace std;
 
     struct Edge {
@@ -16,7 +17,7 @@
     vector<Edge> readGraphFromFile(const string& filename, int& numVertices) {
         vector<Edge> edges;
         ifstream inputFile(filename);
-
+            
         if (!inputFile.is_open()) {
             cout << "Cannot open file." << endl;
             return edges;
@@ -56,8 +57,7 @@
         }
         return false;
     }
-
-    
+   
     void printAdjacencyMatrix(const vector<Edge>& edges, int numVertices) {
         vector<vector<int>> adjacencyMatrix(numVertices, vector<int>(numVertices, 0));
 
@@ -99,9 +99,9 @@
                 count++;
             }
         }
-
         return count/2;
     }
+
     int countEdges(const vector<Edge>& edges, bool isUndirectedGraph) {
         int edgeCount = edges.size();
         for (const auto& edge : edges) {
@@ -172,6 +172,7 @@
         }
         return check;
     }
+
     int countIsolatedVerticesUndirected(const vector <int> degree, int numVertices) {
         int check = 0;
         for (int i = 1; i <= numVertices; ++i) {
@@ -181,6 +182,7 @@
         }
         return check;
     }
+
     int countHangingVerticesDirected(const vector<int> inDegrees, vector <int> outDegrees, int numVertices) {
         int check = 0;
         for (int i = 1; i <= numVertices; ++i) {
@@ -189,8 +191,8 @@
             }
         }
         return check;
-     
     }
+
     int countIsolatedVerticesDirected(const vector<int> inDegrees, vector <int> outDegrees, int numVertices) {
         int check = 0;
         for (int i = 1; i <= numVertices; ++i) {
@@ -201,18 +203,106 @@
         return check;
     }
 
+    //dfs
 
+    void DFS(const vector<vector<int>>& adjacencyList, int source, unordered_set<int>& visited) {
+        cout << source << " ";
+        visited.insert(source);
 
-    int main() {
-        int numVertices = 0;
-        vector<Edge> edges = readGraphFromFile("graph.txt", numVertices);
+        for (int neighbor : adjacencyList[source]) {
+            if (visited.find(neighbor) == visited.end()) {
+                DFS(adjacencyList, neighbor, visited);
+            }
+        }
+    }
 
-        //in ma trận
+    void printDFS(const vector<Edge>& edges, int numVertices, int source) {
+        vector<vector<int>> adjacencyList(numVertices + 1);
+
+        for (const auto& edge : edges) {
+            adjacencyList[edge.source].push_back(edge.target);
+            // adjacencyList[edge.target].push_back(edge.source);
+        }
+
+        unordered_set<int> visited;
+        cout << "DFS traversal starting from vertex " << source << ": ";
+        DFS(adjacencyList, source, visited);
+        cout << endl;
+    }
+
+    void BFS(const vector<vector<int>>& adjacencyList, int source, unordered_set<int>& visited) {
+        queue<int> q;
+        q.push(source);
+        visited.insert(source);
+
+        while (!q.empty()) {
+            int current = q.front();
+            q.pop();
+            cout << current << " ";
+
+            for (int neighbor : adjacencyList[current]) {
+                if (visited.find(neighbor) == visited.end()) {
+                    q.push(neighbor);
+                    visited.insert(neighbor);
+                }
+            }
+        }
+    }
+    void printBFS(const vector<Edge>& edges, int numVertices, int source) {
+        vector<vector<int>> adjacencyList(numVertices + 1);
+
+        for (const auto& edge : edges) {
+            adjacencyList[edge.source].push_back(edge.target);
+            // adjacencyList[edge.target].push_back(edge.source);
+        }
+
+        unordered_set<int> visited;
+        cout << "BFS traversal starting from vertex " << source << ": ";
+        BFS(adjacencyList, source, visited);
+        cout << endl;
+    }
+    void printConnectedComponents(const vector<Edge>& edges, int numVertices) {
+        vector<vector<int>> adjacencyList(numVertices + 1);
+        for (const auto& edge : edges) {
+            adjacencyList[edge.source].push_back(edge.target);
+            adjacencyList[edge.target].push_back(edge.source);
+        }
+
+        vector<bool> visited(numVertices + 1, false);
+        int componentCount = 0;
+
+        for (int i = 1; i <= numVertices; ++i) {
+            if (!visited[i]) {
+                queue<int> q;
+                q.push(i);
+                visited[i] = true;
+                componentCount++;
+
+                cout << "Thành phần liên thông #" << componentCount << ": ";
+                while (!q.empty()) {
+                    int current = q.front();
+                    q.pop();
+                    cout << current << " ";
+                    for (int neighbor : adjacencyList[current]) {
+                        if (!visited[neighbor]) {
+                            q.push(neighbor);
+                            visited[neighbor] = true;
+                        }
+                    }
+                }
+                cout << endl;
+            }
+        }
+
+        cout << "Số lượng thành phần liên thông: " << componentCount << endl;
+    }
+
+    void processGraph(const vector<Edge>& edges, int numVertices) {
         printAdjacencyMatrix(edges, numVertices);
-        
+
         //kiểm tra vô hướng, có hướng
         if (isUndirectedGraph(edges)) {
-            
+
             cout << "This is an undirected graph." << endl;
         }
         else {
@@ -227,10 +317,9 @@
         //tông số cạnh
         cout << "Sum of edges of graph: " << countedges << endl;
 
-       //cặp đỉnh xuất hiện canh bội
+        //cặp đỉnh xuất hiện canh bội
         int duplicateEdgeCount = countDuplicateEdges(edges);
         cout << "Number of pairs of vertices with multiple edges: " << duplicateEdgeCount << endl;
-        
 
         //cạnh khuyên
         int edgePiercings = countEdgePiercings(edges);
@@ -247,9 +336,12 @@
         else {
             vector<int> inDegrees, outDegrees;
             calculateInAndOutDegrees(edges, numVertices, inDegrees, outDegrees);
+
             int countHanging = countHangingVerticesDirected(inDegrees, outDegrees, numVertices);
+
             cout << "Sum of hanging vertices of graph: " << countHanging << endl;
-            int coutIsolated = countIsolatedVerticesDirected(inDegrees,  outDegrees, numVertices);
+            int coutIsolated = countIsolatedVerticesDirected(inDegrees, outDegrees, numVertices);
+
             cout << "Sum of isolated vertices of graph: " << coutIsolated << endl;
         }
         //bậc cuả đỉnh
@@ -266,6 +358,22 @@
                 cout << "Vertex " << i << ": In-Degree = " << inDegrees[i] << ", Out-Degree = " << outDegrees[i] << std::endl;
             }
         }
-        
+    }
+
+    int main() {
+
+        int numVertices = 0;
+        vector<Edge> edges = readGraphFromFile("graph.txt", numVertices);
+        processGraph(edges, numVertices);
+
+        int source;
+        cout << "Nhap  dinh dau: ";
+        cin >> source;
+
+        printDFS(edges, numVertices, source);
+        printBFS(edges, numVertices, source);
+        printConnectedComponents(edges, numVertices);
         return 0;
     }
+
+   
