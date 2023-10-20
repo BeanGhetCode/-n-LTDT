@@ -9,11 +9,19 @@
 #include <queue> 
     using namespace std;
 
+    //Kiểu dữ liệu đỉnh
     struct Edge {
         int source;
         int target;
     };
-
+    //Có trọng số
+    struct EdgeWeight
+    {
+        int source;
+        int target;
+        int weight;
+    };
+    //Đọc đồ thị không có trọng số từ file txt
     vector<Edge> readGraphFromFile(const string& filename, int& numVertices) {
         vector<Edge> edges;
         ifstream inputFile(filename);
@@ -41,7 +49,37 @@
         inputFile.close();
         return edges;
     }
+    //Đọc đồ thị có trọng số từ file txt
+    vector<EdgeWeight> readGraphWeightFromFile(const string& filename, int& numVertices) {
+        vector<EdgeWeight> edges;
+        ifstream inputFile(filename);
 
+        if (!inputFile.is_open()) {
+            cout << "Cannot open file." << endl;
+            return edges;
+        }
+
+        // Đọc số lượng đỉnh từ dòng đầu tiên
+        string line;
+        getline(inputFile, line);
+        numVertices = stoi(line);
+
+        int source = 1;
+        while (getline(inputFile, line)) {
+            stringstream ss(line);
+            int target, weight;
+            while (ss >> target >> weight) {
+                EdgeWeight edge = { source, target, weight };
+                edges.push_back(edge);
+            }
+            source++;
+        }
+
+        inputFile.close();
+        return edges;
+    }
+
+    //Kiểm tra vô hướng
     bool isUndirectedGraph(const vector<Edge>& edges) {
         unordered_set<int> uniqueEdges;
 
@@ -57,7 +95,7 @@
         }
         return false;
     }
-   
+    //In đồ thị dưới dạng ma trận
     void printAdjacencyMatrix(const vector<Edge>& edges, int numVertices) {
         vector<vector<int>> adjacencyMatrix(numVertices, vector<int>(numVertices, 0));
 
@@ -81,19 +119,17 @@
             cout << endl;
         }
     }
-    
+    //Cặp đỉnh có cạnh bội
     int countDuplicateEdges(const vector<Edge>& edges) {
         const int MAX_VERTICES = 100; // Số lượng đỉnh tối đa
         vector<vector<int>> edgeCount(MAX_VERTICES, vector<int>(MAX_VERTICES, 0));
 
         int count = 0;
 
-        // Đếm số lần xuất hiện của các cặp đỉnh
         for (const auto& edge : edges) {
             edgeCount[edge.source][edge.target]++;
         }
 
-        // Kiểm tra các cặp đỉnh có nhiều cạnh và không trùng ngược lại
         for (const auto& edge : edges) {
             if (edgeCount[edge.source][edge.target] > 1 && edge.source < edge.target) {
                 count++;
@@ -101,7 +137,7 @@
         }
         return count/2;
     }
-
+    //Tổng cạnh của đồ thị
     int countEdges(const vector<Edge>& edges, bool isUndirectedGraph) {
         int edgeCount = edges.size();
         for (const auto& edge : edges) {
@@ -123,7 +159,7 @@
             return edgeCount;
         }
     }
-
+    //Bậc của đỉnh đồ thị vô hướng
     vector<int> calculateDegreesUndirected(const vector<Edge>& edges, int numVertices) {
         vector<int> degrees(numVertices + 1, 0); // Bậc của đỉnh bắt đầu từ 1
 
@@ -131,18 +167,17 @@
             int source = edges[i].source;
             int target = edges[i].target;
 
-            if (source == target) {
-                // Cạnh khuyên: tăng bậc của đỉnh một lần
+            if (source == target) {            
                 degrees[source]++;
                 degrees[target]++;
             }
-            else {
-                // Cạnh không phải khuyên: tăng bậc của cả hai đỉnh một lần
+            else {         
                 degrees[source]++;       
             }
         }
         return degrees;
     }
+    //Bậc của đỉnh đồ thị có hướng
     void calculateInAndOutDegrees(const vector<Edge>& edges, int numVertices,vector<int>& inDegrees, vector<int>& outDegrees) {
 
         inDegrees.resize(numVertices + 1, 0); 
@@ -153,6 +188,7 @@
             inDegrees[edge.target]++;
         }
     }
+    //Đếm cạnh khuyên
     int countEdgePiercings(const vector<Edge>& edges) {
         int check = 0;
         for (const Edge& edge : edges) {
@@ -162,7 +198,7 @@
         }
         return check;
     }
-
+    //Đến đỉnh treo đồ thị vô hướng
     int countHangingVerticesUndirected(const vector <int> degree, int numVertices) {
         int check = 0;
         for (int i = 1; i <= numVertices; ++i) {
@@ -172,7 +208,7 @@
         }
         return check;
     }
-
+    //Đếm đỉnh cô lặp đồ thị vô hướng
     int countIsolatedVerticesUndirected(const vector <int> degree, int numVertices) {
         int check = 0;
         for (int i = 1; i <= numVertices; ++i) {
@@ -182,7 +218,7 @@
         }
         return check;
     }
-
+    //Đếm đỉnh treo đồ thị có hướng
     int countHangingVerticesDirected(const vector<int> inDegrees, vector <int> outDegrees, int numVertices) {
         int check = 0;
         for (int i = 1; i <= numVertices; ++i) {
@@ -192,7 +228,7 @@
         }
         return check;
     }
-
+    //Đếm đỉnh cô lặp đồ thị có hướng 
     int countIsolatedVerticesDirected(const vector<int> inDegrees, vector <int> outDegrees, int numVertices) {
         int check = 0;
         for (int i = 1; i <= numVertices; ++i) {
@@ -203,8 +239,7 @@
         return check;
     }
 
-    //dfs
-
+    //DFS
     void DFS(const vector<vector<int>>& adjacencyList, int source, unordered_set<int>& visited) {
         cout << source << " ";
         visited.insert(source);
@@ -230,7 +265,9 @@
         cout << endl;
     }
 
-    void BFS(const vector<vector<int>>& adjacencyList, int source, unordered_set<int>& visited) {
+    //BFS
+    vector<int> BFS(const vector<vector<int>>& adjacencyList, int source, unordered_set<int>& visited) {
+        vector<int> result;
         queue<int> q;
         q.push(source);
         visited.insert(source);
@@ -238,8 +275,7 @@
         while (!q.empty()) {
             int current = q.front();
             q.pop();
-            cout << current << " ";
-
+            result.push_back(current);
             for (int neighbor : adjacencyList[current]) {
                 if (visited.find(neighbor) == visited.end()) {
                     q.push(neighbor);
@@ -247,7 +283,10 @@
                 }
             }
         }
+
+        return result;
     }
+
     void printBFS(const vector<Edge>& edges, int numVertices, int source) {
         vector<vector<int>> adjacencyList(numVertices + 1);
 
@@ -257,10 +296,16 @@
         }
 
         unordered_set<int> visited;
+        vector<int> bfsResult = BFS(adjacencyList, source, visited);
+
         cout << "BFS traversal starting from vertex " << source << ": ";
-        BFS(adjacencyList, source, visited);
+        for (int vertex : bfsResult) {
+            cout << vertex << " ";
+        }
         cout << endl;
     }
+
+    //In ra các thành phần liên thông
     void printConnectedComponents(const vector<Edge>& edges, int numVertices) {
         vector<vector<int>> adjacencyList(numVertices + 1);
         for (const auto& edge : edges) {
@@ -278,7 +323,7 @@
                 visited[i] = true;
                 componentCount++;
 
-                cout << "Thành phần liên thông #" << componentCount << ": ";
+                cout << "Interconnection components  " << componentCount << ": ";
                 while (!q.empty()) {
                     int current = q.front();
                     q.pop();
@@ -293,11 +338,63 @@
                 cout << endl;
             }
         }
+        cout << "Number of interconnected components: " << componentCount << endl;
+    }
+    //Kiểm tra liên thông bằng BFS
+    bool isConnectedGraph(const vector<Edge>& edges, int numVertices) {
+        vector<vector<int>> adjacencyList(numVertices + 1);
 
-        cout << "Số lượng thành phần liên thông: " << componentCount << endl;
+        for (const auto& edge : edges) {
+            adjacencyList[edge.source].push_back(edge.target);
+            adjacencyList[edge.target].push_back(edge.source);
+        }
+
+        unordered_set<int> visited;
+        BFS(adjacencyList, edges[0].source, visited);
+
+        return (visited.size() == numVertices);
     }
 
-    void processGraph(const vector<Edge>& edges, int numVertices) {
+    //Prim
+    void prim(const vector<EdgeWeight>& edges, int source, int numVertices) {
+        int sumWeight = 0;
+        bool used[1000];
+        memset(used, false, sizeof(used));
+        vector<pair<int, int>> adj[1000];
+        vector<EdgeWeight> SpanningTree;  
+        for (const EdgeWeight& edge : edges) {
+            adj[edge.source].emplace_back(edge.target, edge.weight);
+            adj[edge.target].emplace_back(edge.source, edge.weight); 
+        }
+
+        used[source] = true;
+
+        while (SpanningTree.size() < numVertices - 1) {
+            int minW = INT_MAX;
+            int x, y;
+            for (int i = 0; i < numVertices; i++) { 
+                if (used[i]) {
+                    for (const pair<int, int>& it : adj[i]) {
+                        int j = it.first, weight = it.second;
+                        if (!used[j] && weight < minW) {
+                            minW = weight;
+                            x = i; y = j;
+                        }
+                    }
+                }
+            }
+            SpanningTree.push_back({ x, y, minW });
+            sumWeight += minW;
+            used[y] = true; 
+        }
+        cout <<"Weights of the Spanning tree: " << sumWeight << endl;
+        for (const EdgeWeight& edge : SpanningTree) {
+            cout << edge.source << "-" << edge.target << ":" << edge.weight << endl;
+        }
+    }
+
+    //Xử lý yêu cầu 1
+    void Requirement1 (const vector<Edge>& edges, int numVertices) {
         printAdjacencyMatrix(edges, numVertices);
 
         //kiểm tra vô hướng, có hướng
@@ -360,20 +457,98 @@
         }
     }
 
-    int main() {
-
-        int numVertices = 0;
-        vector<Edge> edges = readGraphFromFile("graph.txt", numVertices);
-        processGraph(edges, numVertices);
-
+    //Xử lý yêu cầu 2
+    void Requirement2(const vector<Edge>& edges, int numVertices) {
         int source;
-        cout << "Nhap  dinh dau: ";
+        cout << "Enter source ";
         cin >> source;
 
         printDFS(edges, numVertices, source);
         printBFS(edges, numVertices, source);
+
+        if (isUndirectedGraph) {
+            cout << "This is an undirected graph." << endl;
+        }
         printConnectedComponents(edges, numVertices);
-        return 0;
     }
 
-   
+    //Xử lý yêu cầu 3
+    void Requirement3(const vector<EdgeWeight>& edges, int numVertices) {
+        vector<Edge> adjacencyList(edges.size());
+        for (int i = 0; i < edges.size() ; i++) {
+            adjacencyList[i].source = edges[i].source;
+            adjacencyList[i].target = edges[i].target;
+            }
+        if (isUndirectedGraph(adjacencyList) && isConnectedGraph(adjacencyList, numVertices)) {
+            int source = 1;
+            prim(edges, source, numVertices);
+        }
+        else {
+            cout << "Đồ thị không phải là đồ thị vô hướng liên thông." << endl;
+        }
+        
+        
+    }
+    int main() {       
+ 
+        int choice;
+        while (true) {
+            cout << "Menu:" << endl;
+            cout << "1. Requirement 1 " << endl;
+            cout << "2. Requirement 2" << endl;
+            cout << "3. Requirement 3" << endl;
+            cout << "4. Requirement 4" << endl;
+            cout << "5. Requirement 5" << endl;
+            cout << "6. Exit" << endl;
+            cout << "Enter your selection: ";
+            cin >> choice;
+
+            switch (choice) {
+            case 1:
+                cout << "1. Requirement 1: " << endl; {
+                    int numVertices = 0;
+                    vector<Edge> edges = readGraphFromFile("graph1.txt", numVertices);
+                    Requirement1(edges, numVertices);
+                }
+                break;
+            case 2:
+                cout << "2. Requirement 2" << endl; {
+                    int numVertices = 0;
+                    vector<Edge> edges = readGraphFromFile("graph2.txt", numVertices);
+                    Requirement2(edges, numVertices);
+                }
+                break;
+            case 3:
+                cout << "3. Requirement 3" << endl;
+                {
+                    int numVertices;
+                    vector<EdgeWeight> edges = readGraphWeightFromFile("graph3.txt", numVertices);
+
+                    // In thông tin danh sách cạnh
+                    /*for (const EdgeWeight& edge : edges) {
+                        cout << "(" << edge.source << "," << edge.target << "," << edge.weight <<")" << endl;
+                    }*/
+                    Requirement3(edges, numVertices);
+                }
+                
+                break;
+            case 4:
+                cout << "4. Requirement 4" << endl;
+             
+                break;
+            case 5:
+                cout << "5. Requirement 5" << endl;
+      
+                break;
+
+            case 6:
+                cout << "Goodbye! The show ended." << endl;
+                return 0;
+            default:
+                cout << "Invalid selection. Please select again." << endl;
+            }
+        }
+
+        return 0;
+    }        
+    

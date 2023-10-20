@@ -20,6 +20,8 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="graph.txt" />
+    <Text Include="graph1.txt" />
+    <Text Include="graph2.txt" />
+    <Text Include="graph3.txt" />
   </ItemGroup>
 </Project>

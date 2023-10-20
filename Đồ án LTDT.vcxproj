@@ -130,7 +130,9 @@
     <ClCompile Include="Đồ án LTDT.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="graph.txt" />
+    <Text Include="graph1.txt" />
+    <Text Include="graph2.txt" />
+    <Text Include="graph3.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
