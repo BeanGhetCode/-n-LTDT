@@ -23,5 +23,7 @@
     <Text Include="graph1.txt" />
     <Text Include="graph2.txt" />
     <Text Include="graph3.txt" />
+    <Text Include="graph4.txt" />
+    <Text Include="graph5.txt" />
   </ItemGroup>
 </Project>
